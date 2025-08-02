@@ -22,10 +22,10 @@ namespace McpUnity.Unity
     public class McpUnityServer : IDisposable
     {
         private static McpUnityServer _instance;
-        
+
         private readonly Dictionary<string, McpToolBase> _tools = new Dictionary<string, McpToolBase>();
         private readonly Dictionary<string, McpResourceBase> _resources = new Dictionary<string, McpResourceBase>();
-        
+
         private WebSocketServer _webSocketServer;
         private CancellationTokenSource _cts;
         private TestRunnerService _testRunnerService;
@@ -36,12 +36,13 @@ namespace McpUnity.Unity
         /// </summary>
         static McpUnityServer()
         {
-            EditorApplication.delayCall += () => {
+            EditorApplication.delayCall += () =>
+            {
                 // Ensure Instance is created and hooks are set up after initial domain load
                 var currentInstance = Instance;
             };
         }
-        
+
         /// <summary>
         /// Singleton instance accessor
         /// </summary>
@@ -92,7 +93,7 @@ namespace McpUnity.Unity
             // Initial start if auto-start is enabled and not recovering from a reload where it was off
             if (McpUnitySettings.Instance.AutoStartServer)
             {
-                 StartServer();
+                StartServer();
             }
         }
 
@@ -111,7 +112,7 @@ namespace McpUnity.Unity
 
             GC.SuppressFinalize(this);
         }
-        
+
         /// <summary>
         /// Start the WebSocket Server to communicate with Node.js
         /// </summary>
@@ -141,7 +142,7 @@ namespace McpUnity.Unity
                 McpLogger.LogError($"Failed to start WebSocket server: {ex.Message}\n{ex.StackTrace}");
             }
         }
-        
+
         /// <summary>
         /// Stop the WebSocket server
         /// </summary>
@@ -154,8 +155,8 @@ namespace McpUnity.Unity
 
             try
             {
-                _webSocketServer?.Stop(); 
-                
+                _webSocketServer?.Stop();
+
                 McpLogger.LogInfo("WebSocket server stopped");
             }
             catch (Exception ex)
@@ -164,12 +165,12 @@ namespace McpUnity.Unity
             }
             finally
             {
-                _webSocketServer = null; 
-                Clients.Clear(); 
+                _webSocketServer = null;
+                Clients.Clear();
                 McpLogger.LogInfo("WebSocket server stopped and resources cleaned up.");
             }
         }
-        
+
         /// <summary>
         /// Try to get a tool by name
         /// </summary>
@@ -177,7 +178,7 @@ namespace McpUnity.Unity
         {
             return _tools.TryGetValue(name, out tool);
         }
-        
+
         /// <summary>
         /// Try to get a resource by name
         /// </summary>
@@ -212,7 +213,7 @@ namespace McpUnity.Unity
                 McpUtils.RunNpmCommand("run build", serverPath);
             }
         }
-        
+
         /// <summary>
         /// Register all available tools
         /// </summary>
@@ -221,7 +222,7 @@ namespace McpUnity.Unity
             // Register MenuItemTool
             MenuItemTool menuItemTool = new MenuItemTool();
             _tools.Add(menuItemTool.Name, menuItemTool);
-            
+
             // Register SelectGameObjectTool
             SelectGameObjectTool selectGameObjectTool = new SelectGameObjectTool();
             _tools.Add(selectGameObjectTool.Name, selectGameObjectTool);
@@ -229,28 +230,32 @@ namespace McpUnity.Unity
             // Register UpdateGameObjectTool
             UpdateGameObjectTool updateGameObjectTool = new UpdateGameObjectTool();
             _tools.Add(updateGameObjectTool.Name, updateGameObjectTool);
-            
+
             // Register PackageManagerTool
             AddPackageTool addPackageTool = new AddPackageTool();
             _tools.Add(addPackageTool.Name, addPackageTool);
-            
+
             // Register RunTestsTool
             RunTestsTool runTestsTool = new RunTestsTool(_testRunnerService);
             _tools.Add(runTestsTool.Name, runTestsTool);
-            
+
             // Register SendConsoleLogTool
             SendConsoleLogTool sendConsoleLogTool = new SendConsoleLogTool();
             _tools.Add(sendConsoleLogTool.Name, sendConsoleLogTool);
-            
+
             // Register UpdateComponentTool
             UpdateComponentTool updateComponentTool = new UpdateComponentTool();
             _tools.Add(updateComponentTool.Name, updateComponentTool);
-            
+
             // Register AddAssetToSceneTool
             AddAssetToSceneTool addAssetToSceneTool = new AddAssetToSceneTool();
             _tools.Add(addAssetToSceneTool.Name, addAssetToSceneTool);
+
+            // Register TimerTool
+            TimerTool timerTool = new TimerTool();
+            _tools.Add(timerTool.Name, timerTool);
         }
-        
+
         /// <summary>
         /// Register all available resources
         /// </summary>
@@ -259,32 +264,32 @@ namespace McpUnity.Unity
             // Register GetMenuItemsResource
             GetMenuItemsResource getMenuItemsResource = new GetMenuItemsResource();
             _resources.Add(getMenuItemsResource.Name, getMenuItemsResource);
-            
+
             // Register GetConsoleLogsResource
             GetConsoleLogsResource getConsoleLogsResource = new GetConsoleLogsResource(_consoleLogsService);
             _resources.Add(getConsoleLogsResource.Name, getConsoleLogsResource);
-            
+
             // Register GetScenesHierarchyResource
             GetScenesHierarchyResource getScenesHierarchyResource = new GetScenesHierarchyResource();
             _resources.Add(getScenesHierarchyResource.Name, getScenesHierarchyResource);
-            
+
             // Register GetPackagesResource
             GetPackagesResource getPackagesResource = new GetPackagesResource();
             _resources.Add(getPackagesResource.Name, getPackagesResource);
-            
+
             // Register GetAssetsResource
             GetAssetsResource getAssetsResource = new GetAssetsResource();
             _resources.Add(getAssetsResource.Name, getAssetsResource);
-            
+
             // Register GetTestsResource
             GetTestsResource getTestsResource = new GetTestsResource(_testRunnerService);
             _resources.Add(getTestsResource.Name, getTestsResource);
-            
+
             // Register GetGameObjectResource
             GetGameObjectResource getGameObjectResource = new GetGameObjectResource();
             _resources.Add(getGameObjectResource.Name, getGameObjectResource);
         }
-        
+
         /// <summary>
         /// Initialize services used by the server
         /// </summary>
@@ -292,7 +297,7 @@ namespace McpUnity.Unity
         {
             // Initialize the test runner service
             _testRunnerService = new TestRunnerService();
-            
+
             // Initialize the console logs service
             _consoleLogsService = new ConsoleLogsService();
         }
